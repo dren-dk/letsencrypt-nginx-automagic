@@ -82,3 +82,45 @@ crontab:
 
 ## Configuring nginx to use a certificate
 
+First create new Diffie-Helman parameters, using these commands:
+```
+cd /etc/nginx
+sudo openssl dhparam -out dhparams.pem 2048
+```
+
+
+Then, for each server add the ssl options:
+```
+server {
+  listen       443 ssl;
+  server_name  foo.example.com;
+
+  ssl_certificate         /etc/letsencrypt/live/foo.example.com/fullchain.pem;
+  ssl_certificate_key     /etc/letsencrypt/live/foo.example.com/privkey.pem;
+  ssl_trusted_certificate /etc/letsencrypt/live/foo.example.com/chain.pem;
+
+  ssl_session_timeout 1d;
+  ssl_session_cache shared:SSL:50m;
+  ssl_session_tickets off;
+
+  ssl_dhparam /etc/nginx/dhparams.pem;
+
+  ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+  ssl_ciphers HIGH;
+  ssl_prefer_server_ciphers on;
+
+  # HSTS (ngx_http_headers required) - 6 months
+  # add_header Strict-Transport-Security max-age=15768000;
+  
+  # OCSP stapling
+  ssl_stapling on;
+  ssl_stapling_verify on;
+
+  location / {
+    proxy_pass http://10.0.3.100/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-forwarded-for $remote_addr;
+  }
+}
+```
