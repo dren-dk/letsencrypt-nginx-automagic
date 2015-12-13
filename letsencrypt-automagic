@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+
+my @certs = @ARGV;
+my $renew = "";
+my $certDir = "/etc/letsencrypt/live";
+
+unless (@certs) {
+    $renew = ' --renew';
+
+    if (-d $certDir) {
+	opendir CD, $certDir or die "Failed to read $certDir: $!";
+	for my $c (readdir CD) {
+	    push @certs, $c unless $c =~ /^\./;
+	}
+	closedir CD;
+    }
+}
+
+die "There are no existing certificates in $certDir and you did not pass any certificates to create to this script"
+    unless @certs;
+
+my $tmp = "$Bin/acme";
+mkdir $tmp;
+
+my $le = "$Bin/letsencrypt";
+if (!-d $le) {
+    chdir $Bin;
+    system("git clone https://github.com/letsencrypt/letsencrypt.git")
+	and die "Failed to git clone https://github.com/letsencrypt/letsencrypt.git into $Bin";
+    die "git didn't seem to create the expected $le dir" unless -d $le;
+}
+
+my $cmd = "$le/letsencrypt-auto certonly --server https://acme-v01.api.letsencrypt.org/directory".
+    " --webroot --webroot-path=$tmp$renew";
+for my $c (@certs) {
+    $cmd .= " -d $c";
+}
+
+print "Running $cmd\n";
+system($cmd) and die "Failed to run $cmd";
+
+print "Running service nginx reload\n";
+system("service nginx reload") and die "Failed to reload nginx config";
+
+exit 0;
