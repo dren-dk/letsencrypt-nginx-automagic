@@ -5,11 +5,18 @@ on Ubuntu 15.10 and quite possibly a lot of other debian-esque distributions.
 The approach was inspired by this page:
 https://johnmaguire.me/2015/12/configuring-nginx-lets-encrypt-automatic-renewal/
 
+To easily use the script along with the config examples, clone the git repo into /opt like this:
+
+```
+cd /opt
+sudo git clone https://github.com/dren-dk/letsencrypt-nginx-automagic.git
+```
+
 
 ## Configuring nginx to allow certificate creation
 
 If you want to have actual content on http, then simply include the config/lets-encrypt.conf file in
-the server block for your http server, before the location section that serves your content:
+the server block for your http server before the location section that serves your content:
 
 ```
 server {
@@ -40,7 +47,7 @@ server {
 
 If you simply  want to redirect everybody away from http towards https,
 then the configuration is much easier and requires just one config file,
-ike my /etc/nginx/sites-enabled/default.conf:
+like my /etc/nginx/sites-enabled/default.conf:
 
 ```
 server {
@@ -57,7 +64,11 @@ server {
 }
 ```
 
-Whenever a configuration change is made to nginx run: sudo service nginx reload
+Before you can continue to create a certificate, run:
+```
+sudo nginx -s reload
+```
+to reload the nginx config files.
 
 
 ## Creating a certificate
@@ -82,14 +93,14 @@ crontab:
 
 ## Configuring nginx to use a certificate
 
-First create new Diffie-Helman parameters, using these commands:
+First create new Diffie-Helman parameters, using these commands, it takes a minute, but you only need to do it once:
 ```
 cd /etc/nginx
 sudo openssl dhparam -out dhparams.pem 2048
 ```
 
 
-Then, for each server add the ssl options:
+Then, for each server add the ssl options to a suitable file in /etc/nginx/sites-enabled:
 ```
 server {
   listen       443 ssl;
@@ -124,3 +135,10 @@ server {
   }
 }
 ```
+
+... and reload the nginx config with:
+```
+sudo nginx -s reload
+```
+
+At this point you should be running https, remember to open port 443 in your firewall.
