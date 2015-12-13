@@ -11,7 +11,7 @@ https://johnmaguire.me/2015/12/configuring-nginx-lets-encrypt-automatic-renewal/
 If you want to have actual content on http, then simply include the config/lets-encrypt.conf file in
 the server block for your http server, before the location section that serves your content:
 
-'''
+```
 server {
   listen   80;
 
@@ -35,14 +35,14 @@ server {
     proxy_set_header X-forwarded-for $remote_addr;
   }
 }
-'''
+```
 
 
 If you simply  want to redirect everybody away from http towards https,
 then the configuration is much easier and requires just one config file,
 ike my /etc/nginx/sites-enabled/default.conf:
 
-'''
+```
 server {
   listen      80 default_server;
   
@@ -55,7 +55,7 @@ server {
     return 301 https://$host$request_uri;
   }
 }
-'''
+```
 
 Whenever a configuration change is made to nginx run: sudo service nginx reload
 
@@ -63,9 +63,9 @@ Whenever a configuration change is made to nginx run: sudo service nginx reload
 ## Creating a certificate
 
 For each new certificate simply run the script as root like this:
-'''
+```
 sudo /opt/letsencrypt-nginx-automagic/letsencrypt-automagic foo.example.com
-'''
+```
 
 The script will clone https://github.com/letsencrypt/letsencrypt if it hasn't yet done
 so and use letsencrypt-auto to create the new certificate.
