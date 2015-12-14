@@ -117,7 +117,7 @@ server {
   ssl_dhparam /etc/nginx/dhparams.pem;
 
   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-  ssl_ciphers HIGH;
+  ssl_ciphers HIGH:!aNULL;
   ssl_prefer_server_ciphers on;
 
   # HSTS (ngx_http_headers required) - 6 months
